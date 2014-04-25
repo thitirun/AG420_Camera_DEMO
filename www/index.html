@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html><!--HTML5 doctype-->
+
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta http-equiv="Pragma" content="no-cache">
+<script type="text/javascript" charset="utf-8" src="intelxdk.js"></script>
+<script type="text/javascript" language="javascript">
+    // This event handler is fired once the intel libraries are ready
+            function onDeviceReady() {
+                //hide splash screen now that our app is ready to run
+                intel.xdk.device.hideSplashScreen();
+                setTimeout(function () {
+                    $.ui.launch();
+                }, 50);
+                
+                //intel.xdk.cache.setCookie(name,value,daysTillExpiry);
+                intel.xdk.cache.setCookie("Counter","",-1);
+                //intel.xdk.camera.clearPictures();
+            }
+            //initial event handler to detect when intel is ready to roll
+            document.addEventListener("intel.xdk.device.ready", onDeviceReady, false);
+</script>
+<script src="js/appframework.ui.min.js"></script>
+<script>
+    $.ui.autoLaunch = false;
+            $.ui.useOSThemes = true; //Change this to false to force a device theme
+            $.ui.blockPageScroll();
+            $(document).ready(function () {
+                if ($.ui.useOSThemes && (!$.os.ios||$.os.ios7))
+                    $("#afui").removeClass("ios");
+            });
+</script>
+
+<script type="text/javascript" language="javascript">
+    document.addEventListener("intel.xdk.camera.picture.add",onSuccess); 
+            document.addEventListener("intel.xdk.camera.picture.busy",onSuccess); 
+            document.addEventListener("intel.xdk.camera.picture.cancel",onSuccess); 
+            document.addEventListener("intel.xdk.camera.picture.remove",onRemove); 
+            
+            function capturePhoto() {
+                //alert("test");
+                
+                intel.xdk.camera.takePicture(50,false,"jpg");
+            }
+        
+            function importPhoto() {
+                //alert("test");
+                intel.xdk.camera.importPicture();
+            }
+            
+            function onSuccess(evt) {
+            
+              if (evt.success == true)
+              {
+                intel.xdk.player.playSound("fart-01.mp3");
+                var counter = intel.xdk.cache.getCookie("Counter");
+                //counter = parseInt(counter);
+                counter++; //alert("รูปที่"+counter);
+                intel.xdk.cache.setCookie("Counter",counter,-1);    
+              
+                document.getElementById('main').firstChild.innerHTML=""; 
+                
+                var str = "";  
+                var arrPictureList = intel.xdk.camera.getPictureList();
+                for (var x=0;x<arrPictureList.length;x++)
+                {
+                    // create image 
+                    var image = document.createElement('img');
+                    image.src=intel.xdk.camera.getPictureURL(arrPictureList[x]);
+                    image.id=arrPictureList[x];
+                    //image.width=50;
+                    //image.height=50;  
+                    //document.getElementById('main').firstChild.appendChild(image);
+                    
+                    str +=  "<a href=#picture onclick=\"image_detail("+ (counter-1) +",'"+image.id+"')\"><img src='" + image.src +"' style='width:50px;height:50px' alt='Title' data-appbuilder-object='image' class='' id = '"+image.id+"'>";
+                    document.getElementById('main').firstChild.innerHTML = str;  //*/
+                }  
+                  
+              }
+              else
+              {
+                if (evt.message != undefined)
+                {
+                    alert(evt.message);
+                }
+                else
+                {
+                    alert("error capturing picture");
+                }
+              }
+            }
+        
+            function image_detail(index,url)
+            {
+                alert(url);
+                var arrPictureList = intel.xdk.camera.getPictureList();
+                var newImage = document.createElement('img');
+                newImage.src=intel.xdk.camera.getPictureURL(arrPictureList[index]);
+                newImage.setAttribute("style","width:300px;height:300px;");
+                document.getElementById('picture').firstChild.innerHTML="<a href=#main><button onclick=\"deletePhoto('"+url+"')\">delete</button></a>";
+                document.getElementById('picture').firstChild.appendChild(newImage);
+                
+                var newImage1 = document.createElement('img');
+                newImage1.src=intel.xdk.camera.getPictureURL(url);
+                newImage1.setAttribute("style","width:300px;height:300px;");
+                document.getElementById('picture').firstChild.appendChild(newImage1);
+                
+                /*
+                for (var x=0;x<arrPictureList.length;x++)
+                {
+                    // create image                 
+                }
+                
+                var str = document.getElementById('main').firstChild.innerHTML;
+                str =  "<img src='" + image.src +"' data-appbuilder-object='image' class='' id = '"+image.id+"'>";
+                document.getElementById('main').firstChild.innerHTML = str;  //*/
+            }
+        
+            function onRemove()
+            {
+                intel.xdk.notification.alert("Hammertime!","STOP","Can\'t Touch This"); 
+                
+                var counter = intel.xdk.cache.getCookie("Counter");
+                //counter = parseInt(counter);
+                counter--; //alert("รูปที่"+counter);
+                intel.xdk.cache.setCookie("Counter",counter,-1);    
+              
+                document.getElementById('main').firstChild.innerHTML=""; 
+                
+                var str = "";  
+                var arrPictureList = intel.xdk.camera.getPictureList();
+                for (var x=0;x<arrPictureList.length;x++)
+                {
+                    // create image 
+                    var image = document.createElement('img');
+                    image.src=intel.xdk.camera.getPictureURL(arrPictureList[x]);
+                    image.id=arrPictureList[x];
+                    //image.width=50;
+                    //image.height=50;  
+                    //document.getElementById('main').firstChild.appendChild(image);
+                   
+                    str +=  "<a href=#picture onclick=\"image_detail("+ (counter-1) +",'"+image.id+"')\"><img src='" + image.src +"' style='width:50px;height:50px' alt='Title' data-appbuilder-object='image' class='' id = '"+image.id+"'>";
+                    document.getElementById('main').firstChild.innerHTML = str;  //*/
+                }
+            }
+            
+            function deletePhoto(url)
+            {
+                var arrPictureList = intel.xdk.camera.getPictureList();
+                if (arrPictureList.length > 0)
+                {
+                    alert("delete " + url + " length:" + arrPictureList.length);
+                    intel.xdk.camera.deletePicture(url);
+                }
+            }
+</script>
+
+<link href="css/icons.css" rel="stylesheet" type="text/css">
+<link href="css/af.ui.css" rel="stylesheet" type="text/css">
+</head>
+
+<div id="afui" class="ios">
+    <div id="header"></div>
+    <div id="content" style="">
+
+        <div class="panel" title="Picture" id="picture" data-appbuilder-object="page" style=""></div>
+        <div class="panel" title="Main" id="main" data-appbuilder-object="page" style=""></div>
+    </div>
+
+    <div id="navbar">
+        <a href="#main" class="icon camera" onclick="capturePhoto()">Take Picture</a>
+        <a href="#picture" class="icon check">Picture</a>
+        <a href="#main" class="icon add" onclick="importPhoto()">Import</a>
+    </div>
+
+    <header id="header_0" data-appbuilder-object="header">
+        <a id="backButton" href="#" class="button back" style="visibility: visible; ">Back</a>
+        <h1 id="pageTitle" class="">test</h1>
+    </header>
+
+
+</div>
+
+
+
+
+
+</html>
